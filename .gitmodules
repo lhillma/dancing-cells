@@ -1,0 +1,3 @@
+[submodule "train_unet/submodules/Cell2Image"]
+	path = train_unet/submodules/Cell2Image
+	url = https://github.com/lhillma/Cell2Image.git
