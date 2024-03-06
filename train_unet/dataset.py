@@ -11,11 +11,12 @@ from torch.nn import functional as fn
 import numpy as np
 
 from numba import njit
-from torch.utils.data.dataloader import multiprocessing
+
+# from torch.utils.data.dataloader import multiprocessing
 
 from tqdm import tqdm
 
-from celltools import image as cimg
+from cell2image import image as cimg
 
 from analysis import (
     fit_ellipse,
@@ -26,7 +27,7 @@ from analysis import (
     get_ellipse_image,
     EllipseParams,
 )
-from celltools.types import SimulationFrame
+from cell2image.types import SimulationFrame
 
 
 class CPFrameDataset(Dataset):
@@ -60,7 +61,9 @@ class CPFrameDataset(Dataset):
     ) -> Iterable[tuple[Tensor, Tensor]]:
         for path in tqdm(paths):
             frame = cimg.read_vtk_frame(path)
-            image = Tensor(frame.image.copy()).to(device)
+            np_image = cimg.get_cell_outlines(frame.cluster_id, frame.cell_id.shape)
+            np_image += np.where(frame.cell_type == 2, 1, 0).astype(np.uint64)
+            image = Tensor(np_image.copy()).to(device)
             cell_type = Tensor((frame.cell_type - 1)).to(device)
 
             if self.transform is not None:

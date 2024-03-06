@@ -147,41 +147,22 @@ def save_dataset(data: MFCPFrameDataset):
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-# device = torch.device("cpu")
 train_data = CPFrameDataset(
     [
-        # Path(
-        #     "/home/leon/CC3DWorkspace/ConfluentLayer_Random_fullParameterScan_576x576/scan_iteration_0/ConfluentLayer_Random_full/LatticeData/"
-        # ),
-        Path("/home/leon/vicsek_datasets/dataset_5_full_images_576x576_T=20/"),
+        Path("../../data/hires_hiprop/"),
     ],
-    transform=transforms.Resize(
-        (288, 288), interpolation=transforms.InterpolationMode.BILINEAR
-    ),
     glob="*_[0-7]/**/*.vtk",
     skip=3 * 8,
     step=1,
 )
-# torch.save(train_data, "train_dataset.pth")
 val_data = ds.CPFrameDataset(
     [
-        # Path(
-        #     "/home/leon/CC3DWorkspace/ConfluentLayer_Random_fullParameterScan_576x576/scan_iteration_0/ConfluentLayer_Random_full/LatticeData/"
-        # ),
         Path("/home/leon/vicsek_datasets/dataset_6_full_images_576x576/"),
     ],
-    transform=transforms.Resize(
-        (288, 288), interpolation=transforms.InterpolationMode.BILINEAR
-    ),
     glob="*_[8-9]/**/*.vtk",
     skip=3 * 2,
     step=1,
 )
-# torch.save(val_data, "val_dataset.pth")
-# exit()
-
-# train_size = int(0.8 * len(data))
-# val_size = len(data) - train_size
 
 # train_data, val_data = random_split(data, [train_size, val_size])
 train_dataloader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True)
