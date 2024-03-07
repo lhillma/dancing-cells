@@ -10,7 +10,7 @@ from monai.transforms import (
     CenterSpatialCropd,
     DistanceTransformEDTd,
 )
-from monai.data import Dataset
+from monai.data import Dataset, CacheDataset
 from typing import Iterable
 from natsort import natsorted
 
@@ -24,6 +24,7 @@ def get_dataset(
     dataset_type: str = "train",
     min_step: int = 0,
     distance_transform: bool = False,
+    cache: bool = False,
 ):
     data_dicts = []
     run_folders = natsorted(dataset_path.glob("*"))
@@ -63,7 +64,11 @@ def get_dataset(
     if distance_transform:
         transforms.append(DistanceTransformEDTd(keys=["image", "nucleus"]))
 
-    return Dataset(data_dicts, Compose(transforms))
+    return (
+        CacheDataset(data_dicts, Compose(transforms), progress=True)
+        if cache
+        else Dataset(data_dicts, Compose(transforms))
+    )
 
 
 def main():
