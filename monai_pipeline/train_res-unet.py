@@ -104,7 +104,8 @@ def print_metrics(metrics: dict[str, float]):
 @click.option("--train-batch-size", default=4)
 @click.option("--val-batch-size", default=8)
 @click.option("--data-path", default="../../data/hires/")
-def main(train_batch_size, val_batch_size, data_path):
+@click.option("--distance-transform", is_flag=True, default=False)
+def main(train_batch_size, val_batch_size, data_path, distance_transform):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     model = ResUNet(n_classes=1, in_channels=2).to(device)
@@ -113,6 +114,7 @@ def main(train_batch_size, val_batch_size, data_path):
         Path(data_path),
         keys=["image", "nucleus", "label"],
         min_step=3000,
+        distance_transform=distance_transform,
     )
     data_loader_train = DataLoader(
         dataset_train,
@@ -127,6 +129,7 @@ def main(train_batch_size, val_batch_size, data_path):
         keys=["image", "nucleus", "label"],
         min_step=3000,
         dataset_type="valid",
+        distance_transform=distance_transform,
     )
     data_loader_valid = DataLoader(
         dataset_valid,
