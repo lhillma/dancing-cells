@@ -22,7 +22,7 @@ def eval_model(
 
     metrics = defaultdict(float)
 
-    dice = DiceLoss()
+    dice = DiceLoss(sigmoid=True)
     bce = BCEWithLogitsLoss()
 
     total = 0
@@ -62,7 +62,7 @@ def train_model(
 
     metrics = defaultdict(float)
 
-    dice = DiceLoss()
+    dice = DiceLoss(sigmoid=True)
     bce = BCEWithLogitsLoss()
 
     total = 0
