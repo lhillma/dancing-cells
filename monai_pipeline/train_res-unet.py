@@ -1,6 +1,7 @@
 from collections import defaultdict
 
 import click
+import numpy as np
 
 from monai.losses.dice import DiceLoss
 from torch.nn import BCEWithLogitsLoss
@@ -100,6 +101,21 @@ def print_metrics(metrics: dict[str, float]):
         print(f"{k}: {v:4f}")
 
 
+def transpose_metrics(metrics: list[dict[str, float]]) -> dict[str, np.ndarray]:
+    transposed_metrics = {}
+    for metric in metrics:
+        for k, v in metric.items():
+            if k in transposed_metrics:
+                transposed_metrics[k] = np.append(transposed_metrics[k], v)
+            else:
+                transposed_metrics[k] = np.array([v])
+    return transposed_metrics
+
+
+def save_metrics(path: Path, metrics: list[dict[str, float]]):
+    np.savez(path, **transpose_metrics(metrics))
+
+
 @click.command()
 @click.option("--train-batch-size", default=4)
 @click.option("--val-batch-size", default=8)
@@ -109,13 +125,13 @@ def print_metrics(metrics: dict[str, float]):
 @click.option("--cache", is_flag=True, default=False)
 @click.option("--out-path", default=".")
 def main(
-    train_batch_size,
-    val_batch_size,
-    data_path,
-    distance_transform,
-    n_workers,
-    cache,
-    out_path,
+    train_batch_size: int,
+    val_batch_size: int,
+    data_path: str,
+    distance_transform: bool,
+    n_workers: int,
+    cache: bool,
+    out_path: str,
 ):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -181,7 +197,10 @@ def main(
 
         scheduler.step(valid_metrics["loss"])
 
-        torch.save(model.state_dict(), out_path / f"res-unet-epoch-{epoch}.pth")
+        torch.save(model.state_dict(), out_dir / f"res-unet-epoch-{epoch}.pth")
+
+        save_metrics(out_dir / "train_metrics.npz", all_train_metrics)
+        save_metrics(out_dir / "valid_metrics.npz", all_valid_metrics)
 
 
 if __name__ == "__main__":
