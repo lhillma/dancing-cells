@@ -19,7 +19,11 @@ from natsort import natsorted
 
 
 def get_dataset(
-    dataset_path: Path, keys: Iterable, dataset_type: str = "train", min_step: int = 0
+    dataset_path: Path,
+    keys: Iterable,
+    dataset_type: str = "train",
+    min_step: int = 0,
+    distance_transform: bool = False,
 ):
     data_dicts = []
     run_folders = natsorted(dataset_path.glob("*"))
@@ -56,7 +60,8 @@ def get_dataset(
     else:
         transforms.append(CenterSpatialCropd(keys=keys, roi_size=[256, 256]))
 
-    transforms.append(DistanceTransformEDTd(keys=["image", "nucleus"]))
+    if distance_transform:
+        transforms.append(DistanceTransformEDTd(keys=["image", "nucleus"]))
 
     return Dataset(data_dicts, Compose(transforms))
 
