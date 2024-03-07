@@ -197,7 +197,8 @@ def main(
 
         scheduler.step(valid_metrics["loss"])
 
-        torch.save(model.state_dict(), out_dir / f"res-unet-epoch-{epoch}.pth")
+        if epoch % 5 == 0:
+            torch.save(model.state_dict(), out_dir / f"res-unet-epoch-{epoch}.pth")
 
         save_metrics(out_dir / "train_metrics.npz", all_train_metrics)
         save_metrics(out_dir / "valid_metrics.npz", all_valid_metrics)
