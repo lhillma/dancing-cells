@@ -1,3 +1,4 @@
+import torch
 from transforms import LoadVTKDatad
 from pathlib import Path
 from monai.transforms import (
@@ -12,6 +13,7 @@ from monai.transforms import (
 from monai.data import Dataset
 from typing import Iterable
 from natsort import natsorted
+
 # import matplotlib.pyplot as plt
 # import torch
 
@@ -39,7 +41,7 @@ def get_dataset(
         )
     transforms = [
         LoadVTKDatad(keys=keys),
-        ToTensord(keys=keys),
+        ToTensord(keys=keys, dtype=torch.float32),
     ]
 
     if dataset_type == "train":
