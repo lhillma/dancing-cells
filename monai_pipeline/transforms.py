@@ -24,10 +24,11 @@ class LoadVTKDatad(MapTransform):
         image = cimg.get_cell_outlines(frame.cluster_id, frame.cluster_id.shape).astype(
             np.float32
         )
-        image += np.where(frame.cell_type == 2, 0, 1).astype(np.float32)
+        nucleus = np.where(frame.cell_type == 2, 0, 1).astype(np.float32)
         data_dict = {
             "image": image[np.newaxis, ...],
             "label": label[np.newaxis, ...],
+            "nucleus": nucleus[np.newaxis, ...],
             # "step": frame.step,
             # "cell_id": frame.cell_id,
             # "cluster_id": frame.cluster_id,
