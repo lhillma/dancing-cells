@@ -27,7 +27,7 @@ def get_dataset(dataset_path: Path, keys: Iterable):
             ToTensord(keys=keys),
             RandSpatialCropd(keys=keys, roi_size=[256, 256], random_size=False),
             # RandRotate90d(keys=keys, prob=0.1, max_k=3),
-            DistanceTransformEDTd(keys=keys),
+            DistanceTransformEDTd(keys=["image", "nucleus"]),
         ]
     )
     return Dataset(data_dicts, transform)
@@ -35,13 +35,14 @@ def get_dataset(dataset_path: Path, keys: Iterable):
 
 def main():
     dataset = get_dataset(
-        Path(r"G:\Hackathon\hires"),
-        keys=["image", "label"],
+        Path(r"../../data/hires_hiprop/"),
+        keys=["image", "label", "nucleus"],
     )
     for data in dataset:
-        fig, ax = plt.subplots(1, 2)
+        fig, ax = plt.subplots(1, 3)
         ax[0].imshow(torch.squeeze(data["image"]), cmap="gray")
-        ax[1].imshow(torch.squeeze(data["label"]), cmap="gray")
+        ax[1].imshow(torch.squeeze(data["nucleus"]), cmap="gray")
+        ax[2].imshow(torch.squeeze(data["label"]), cmap="gray")
         plt.show()
 
 
