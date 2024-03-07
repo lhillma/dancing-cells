@@ -107,8 +107,15 @@ def print_metrics(metrics: dict[str, float]):
 @click.option("--distance-transform", is_flag=True, default=False)
 @click.option("--n-workers", default=8)
 @click.option("--cache", is_flag=True, default=False)
+@click.option("--out-path", default=".")
 def main(
-    train_batch_size, val_batch_size, data_path, distance_transform, n_workers, cache
+    train_batch_size,
+    val_batch_size,
+    data_path,
+    distance_transform,
+    n_workers,
+    cache,
+    out_path,
 ):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -145,9 +152,9 @@ def main(
         num_workers=n_workers,
     )
 
-    initial_metrics = eval_model(model, data_loader_valid, device)
+    # initial_metrics = eval_model(model, data_loader_valid, device)
 
-    print_metrics(initial_metrics)
+    # print_metrics(initial_metrics)
 
     optimizer = torch.optim.SGD(model.parameters(), lr=0.1, momentum=0.9)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
@@ -156,6 +163,9 @@ def main(
 
     all_train_metrics = []
     all_valid_metrics = []
+
+    out_dir = Path(out_path)
+    out_dir.mkdir(exist_ok=True, parents=True)
 
     for epoch in range(100):
         print(f"Epoch {epoch}")
@@ -171,7 +181,7 @@ def main(
 
         scheduler.step(valid_metrics["loss"])
 
-        torch.save(model.state_dict(), f"res-unet-epoch-{epoch}.pth")
+        torch.save(model.state_dict(), out_path / f"res-unet-epoch-{epoch}.pth")
 
 
 if __name__ == "__main__":
