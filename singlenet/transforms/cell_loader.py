@@ -28,7 +28,7 @@ class VTKLoader(MapTransform):
             np_image = c2i.get_cell_outlines(frame.cluster_id, frame.cell_id.shape)
             np_image += np.where(frame.cell_type == 2, 1, 0).astype(np.uint64)
 
-            d[key] = np_image
+            d[key] = np_image[..., None]
             d[f"{key}{self.frame_suffix}"] = frame
             d[f"{key}{self.cluster_suffix}"] = frame.cluster_id
 
