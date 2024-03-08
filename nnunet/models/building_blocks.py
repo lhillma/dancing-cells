@@ -10,7 +10,6 @@ from typing import List
 
 import torch
 import torch.nn as nn
-from torch import Tensor
 
 
 class Block(nn.Module):
@@ -53,7 +52,7 @@ class Block(nn.Module):
         self.bn2 = nn.BatchNorm2d(output_channels)
         self.lrelu = nn.LeakyReLU(0.01)
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Performs the forward pass of the block.
 
         Args:
@@ -97,7 +96,7 @@ class Encoder(nn.Module):
         ]
         self.enc_blocks = nn.ModuleList(blocks)
 
-    def forward(self, x: Tensor) -> List[Tensor]:
+    def forward(self, x: torch.Tensor) -> List[torch.Tensor]:
         """Performs the forward pass for all blocks in the encoder.
 
         Args:
@@ -169,7 +168,9 @@ class Decoder(nn.Module):
         self.output_threshold_idx = self.nr_blocks - nr_output_convs
         self.dropout = nn.Dropout2d(dropout)
 
-    def forward(self, x: Tensor, encoder_features: List[Tensor]) -> List[Tensor]:
+    def forward(
+        self, x: torch.Tensor, encoder_features: List[torch.Tensor]
+    ) -> List[torch.Tensor]:
         """Performs the forward pass for all blocks in the decoder.
 
         Args:
