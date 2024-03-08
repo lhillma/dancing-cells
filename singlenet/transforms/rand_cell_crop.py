@@ -1,4 +1,5 @@
-from cell2image.image import crop_cell_neighbourhood
+# from cell2image.image import crop_cell_neighbourhood
+from cell2image import image as cimg
 from monai.transforms import MapTransform, RandomizableTransform
 
 
@@ -31,10 +32,11 @@ class RandCellCropd(RandomizableTransform, MapTransform):
         d[self.cell_id_key] = selected_cell
 
         for key in self.key_iterator(data):
-            d[key] = crop_cell_neighbourhood(
-                image_in=d[key],
-                frame=d[self.frame_key],
+            d[key] = cimg.crop_cell_and_neighbours(
+                # image_in=d[key],  # either image or label
+                cell_ids=d[self.frame_key].cluster_id,
                 cell_id=selected_cell,
+                neighbour_order=2,
                 size=self.crop_size,
             )
 
