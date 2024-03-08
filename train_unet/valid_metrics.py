@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, roc_auc_score, roc_curve, precision_recall_curve, average_precision_score
 
 from models import ResUNet
+from cell2image import image as cimg
 
 
 
@@ -37,8 +38,9 @@ def eval_model_with_metrics(model: torch.nn.Module, data_loader: DataLoader, dev
     with torch.no_grad():
         for data in data_loader:
             images, labels = data['image'].to(device), data['label'].to(device)
+
             outputs = model(images)
-            # binary classification so assumed to have a sigmoid output
+
             preds = torch.sigmoid(outputs).cpu().numpy()
             predictions.extend(preds)
             true_labels.extend(labels.cpu().numpy())
