@@ -1,5 +1,5 @@
 import torch
-from transforms import LoadVTKDatad
+from .transforms import LoadVTKDatad
 from pathlib import Path
 from monai.transforms import (
     Compose,
@@ -7,7 +7,6 @@ from monai.transforms import (
     RandSpatialCropd,
     RandFlipd,
     RandRotate90d,
-    CenterSpatialCropd,
     DistanceTransformEDTd,
 )
 from monai.data import Dataset, CacheDataset
@@ -58,8 +57,10 @@ def get_dataset(
                 RandRotate90d(keys=keys, prob=0.75, max_k=3),
             ]
         )
-    else:
-        transforms.append(CenterSpatialCropd(keys=keys, roi_size=[256, 256]))
+    # # just use full image, full convnet works for any resolution (as long as it's
+    # # divisible by 2**depth)
+    # else:
+    #     transforms.append(CenterSpatialCropd(keys=keys, roi_size=[256, 256]))
 
     if distance_transform:
         transforms.append(DistanceTransformEDTd(keys=["image", "nucleus"]))

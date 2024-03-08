@@ -29,8 +29,8 @@ class LoadVTKDatad(MapTransform):
             "image": image[np.newaxis, ...],
             "label": label[np.newaxis, ...],
             "nucleus": nucleus[np.newaxis, ...],
-            # "step": frame.step,
+            "cluster_id": frame.cluster_id[np.newaxis, ...],
             # "cell_id": frame.cell_id,
-            # "cluster_id": frame.cluster_id,
+            # "step": frame.step,
         }
         return data_dict
