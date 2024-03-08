@@ -17,7 +17,7 @@ from monai_dataset import get_dataset
 
 
 def eval_model(
-    model: nn.Module, data_loader: DataLoader, device, bce_weight=0.5
+    model: nn.Module, data_loader: DataLoader, device, bce_weight=0.5, no_nucleus=False
 ) -> dict[str, float]:
     model.eval()
 
@@ -33,7 +33,11 @@ def eval_model(
             image = data["image"].astype(torch.float32)
             nucleus = data["nucleus"].astype(torch.float32)
             labels = data["label"].astype(torch.float32).to(device)
-            input = torch.cat((image, nucleus), dim=1).to(device)
+            input = (
+                torch.cat((image, nucleus), dim=1).to(device)
+                if not no_nucleus
+                else image.to(device)
+            )
 
             output = model(input)
 
@@ -58,6 +62,7 @@ def train_model(
     device,
     bce_weight=0.5,
     scheduler=None,
+    no_nucleus=False,
 ) -> dict[str, float]:
     model.train()
 
@@ -72,7 +77,11 @@ def train_model(
         image = data["image"].astype(torch.float32)
         nucleus = data["nucleus"].astype(torch.float32)
         labels = data["label"].astype(torch.float32).to(device)
-        input = torch.cat((image, nucleus), dim=1).to(device)
+        input = (
+            torch.cat((image, nucleus), dim=1).to(device)
+            if not no_nucleus
+            else image.to(device)
+        )
 
         output = model(input)
 
@@ -119,11 +128,12 @@ def save_metrics(path: Path, metrics: list[dict[str, float]]):
 @click.command()
 @click.option("--train-batch-size", default=4)
 @click.option("--val-batch-size", default=8)
-@click.option("--data-path", default="../../data/hires/")
+@click.option("--data-path", default="../../../../data/hires/")
 @click.option("--distance-transform", is_flag=True, default=False)
 @click.option("--n-workers", default=8)
 @click.option("--cache", is_flag=True, default=False)
 @click.option("--out-path", default=".")
+@click.option("--no-nucleus", is_flag=True, default=False)
 def main(
     train_batch_size: int,
     val_batch_size: int,
@@ -132,10 +142,11 @@ def main(
     n_workers: int,
     cache: bool,
     out_path: str,
+    no_nucleus: bool,
 ):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    model = ResUNet(n_classes=1, in_channels=2).to(device)
+    model = ResUNet(n_classes=1, in_channels=2 if not no_nucleus else 1).to(device)
 
     dataset_train = get_dataset(
         Path(data_path),
@@ -183,14 +194,18 @@ def main(
     out_dir = Path(out_path)
     out_dir.mkdir(exist_ok=True, parents=True)
 
-    for epoch in range(100):
+    for epoch in range(50):
         print(f"Epoch {epoch}")
-        train_metrics = train_model(model, optimizer, data_loader_train, device)
+        train_metrics = train_model(
+            model, optimizer, data_loader_train, device, no_nucleus=no_nucleus
+        )
         print("Train metrics:")
         print_metrics(train_metrics)
         all_train_metrics.append(train_metrics)
 
-        valid_metrics = eval_model(model, data_loader_valid, device)
+        valid_metrics = eval_model(
+            model, data_loader_valid, device, no_nucleus=no_nucleus
+        )
         print("Validation metrics:")
         print_metrics(valid_metrics)
         all_valid_metrics.append(valid_metrics)
