@@ -4,6 +4,7 @@ from train_unet.models import ResUNet
 from torch.utils.data import DataLoader
 from monai_pipeline.monai_dataset import get_dataset
 from monai.data.utils import no_collation
+from train_unet.valid_metrics import eval_model_with_metrics, print_metrics
 
 
 def get_model(weights_path: Path, device: torch.device):
@@ -40,20 +41,21 @@ def main():
         num_workers=n_workers,
         collate_fn=no_collation,  # just give list of dicts
     )
+    eval_metrics = eval_model_with_metrics(model, data_loader_valid, device)
+    print_metrics(eval_metrics)
 
-    for data in data_loader_valid:
-        data_dict = data[0]
-        image = data_dict["image"].float().unsqueeze(0)
-        nucleus = data_dict["nucleus"].float().unsqueeze(0)
-        model_input = torch.cat((image, nucleus), dim=1).to(device)
-        cluster_id = data_dict["cluster_id"].int()
-        labels = data_dict["label"].float()
-        outputs = model(model_input).squeeze(0).cpu()
-        print(outputs.shape)  # torch.Size([1, 400, 400])
-        print(labels.shape)  # torch.Size([1, 400, 400])
-        print(cluster_id.shape)  # torch.Size([1, 400, 400])
-
-        break
+    # for data in data_loader_valid:
+    #     data_dict = data[0]
+    #     image = data_dict["image"].float().unsqueeze(0)
+    #     nucleus = data_dict["nucleus"].float().unsqueeze(0)
+    #     model_input = torch.cat((image, nucleus), dim=1).to(device)
+    #     cluster_id = data_dict["cluster_id"].int()
+    #     labels = data_dict["label"].float()
+    #     outputs = model(model_input).squeeze(0).cpu()
+    #     print(outputs.shape)  # torch.Size([1, 400, 400])
+    #     print(labels.shape)  # torch.Size([1, 400, 400])
+    #     print(cluster_id.shape)  # torch.Size([1, 400, 400])
+    #     break
 
 
 if __name__ == "__main__":
