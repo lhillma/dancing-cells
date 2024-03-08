@@ -18,6 +18,8 @@ from monai_dataset import get_dataset
 import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, roc_auc_score, roc_curve, precision_recall_curve, average_precision_score
 
+from models import ResUNet
+
 
 
 def load_model_snapshot(model_path, device):
