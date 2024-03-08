@@ -20,9 +20,8 @@ def eval_model_with_metrics(
     model.eval()
     predictions, true_labels = [], []
 
-    cluster_predictions = {}
-    cluster_true_labels = {}
     with torch.no_grad():
+        # for i, data in tqdm(enumerate(data_loader)):
         for data in tqdm(data_loader):
             data_dict = data[0] if isinstance(data, list) else data
             image = data_dict["image"].to(device).float()
@@ -38,37 +37,36 @@ def eval_model_with_metrics(
                 bool_array = np.where(cluster_ids == unique_cluster_id, 1, 0)
                 mean_pred = np.mean(preds[bool_array == 1.0])
                 mean_label = np.mean(labels[bool_array == 1.0])
-                if unique_cluster_id not in cluster_predictions:
-                    cluster_predictions[unique_cluster_id] = []
-                    cluster_true_labels[unique_cluster_id] = []
 
-                cluster_predictions[unique_cluster_id].append(mean_pred)
-                cluster_true_labels[unique_cluster_id].append(mean_label)
+                predictions.append(mean_pred)
+                true_labels.append(mean_label)
+            # if i == 1:
+            #     break
 
-    # Compute metrics for each cluster
-    cluster_metrics = {}
-    for cluster_id in cluster_predictions:
-        predictions = np.array(cluster_predictions[cluster_id])
-        true_labels = np.array(cluster_true_labels[cluster_id])
+    # Binarize predictions for accuracy, F1, precision, and recall
+    binarized_predictions = np.round(predictions)
 
-        # Binarize predictions for accuracy, F1, precision, and recall
-        binarized_predictions = np.round(predictions)
+    accuracy = accuracy_score(true_labels, binarized_predictions)
+    # print(accuracy)
+    f1 = f1_score(true_labels, binarized_predictions, zero_division=1)
+    # print(f1)
+    precision = precision_score(true_labels, binarized_predictions, zero_division=1)
+    # print(precision)
+    recall = recall_score(true_labels, binarized_predictions, zero_division=1)
+    # print(recall)
+    auc = roc_auc_score(true_labels, predictions)
+    # print(auc)
+    average_precision = average_precision_score(true_labels, predictions)
+    # print(average_precision)
 
-        accuracy = accuracy_score(true_labels, binarized_predictions)
-        f1 = f1_score(true_labels, binarized_predictions, zero_division=1)
-        precision = precision_score(true_labels, binarized_predictions, zero_division=1)
-        recall = recall_score(true_labels, binarized_predictions, zero_division=1)
-        auc = roc_auc_score(true_labels, predictions)
-        average_precision = average_precision_score(true_labels, predictions)
-
-        cluster_metrics[cluster_id] = {
-            "accuracy": accuracy,
-            "f1": f1,
-            "precision": precision,
-            "recall": recall,
-            "auc": auc,
-            "average_precision": average_precision,
-        }
+    cluster_metrics = {
+        "accuracy": accuracy,
+        "f1": f1,
+        "precision": precision,
+        "recall": recall,
+        "auc": auc,
+        "average_precision": average_precision,
+    }
 
     # Here you can print or process `cluster_metrics` as needed
     return cluster_metrics
