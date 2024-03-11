@@ -1,5 +1,5 @@
 import torch
-from transforms import LoadVTKDatad
+from .transforms import LoadVTKDatad
 from pathlib import Path
 from monai.transforms import (
     Compose,
@@ -7,7 +7,6 @@ from monai.transforms import (
     RandSpatialCropd,
     RandFlipd,
     RandRotate90d,
-    CenterSpatialCropd,
     DistanceTransformEDTd,
 )
 from monai.data import Dataset, CacheDataset
@@ -24,6 +23,7 @@ def get_dataset(
     dataset_type: str = "train",
     min_step: int = 0,
     distance_transform: bool = False,
+    augmentation: bool = False,
     cache: bool = False,
 ):
     data_dicts = []
@@ -49,7 +49,7 @@ def get_dataset(
         ToTensord(keys=keys, dtype=torch.float32),
     ]
 
-    if dataset_type == "train":
+    if augmentation:
         transforms.extend(
             [
                 RandSpatialCropd(keys=keys, roi_size=[256, 256], random_size=False),
@@ -58,8 +58,8 @@ def get_dataset(
                 RandRotate90d(keys=keys, prob=0.75, max_k=3),
             ]
         )
-    else:
-        transforms.append(CenterSpatialCropd(keys=keys, roi_size=[256, 256]))
+    # else:
+    #     transforms.append(CenterSpatialCropd(keys=keys, roi_size=[256, 256]))
 
     if distance_transform:
         transforms.append(DistanceTransformEDTd(keys=["image", "nucleus"]))
