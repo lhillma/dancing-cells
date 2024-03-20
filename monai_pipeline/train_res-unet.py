@@ -30,10 +30,11 @@ def eval_model(
 
     with torch.no_grad():
         for data in tqdm(data_loader, total=len(data_loader), desc="Validation"):
-            image = data["image"].astype(torch.float32)
-            nucleus = data["nucleus"].astype(torch.float32)
-            labels = data["label"].astype(torch.float32).to(device)
-            input = torch.cat((image, nucleus), dim=1).to(device)
+            # image = data["image"].astype(torch.float32)
+            nucleus = data["nucleus"].astype(torch.float32).to(device)
+            labels = data["image"].astype(torch.float32).to(device)
+            # input = torch.cat((image, nucleus), dim=1).to(device)
+            input = nucleus
 
             output = model(input)
 
@@ -69,10 +70,11 @@ def train_model(
     total = 0
 
     for data in tqdm(data_loader, total=len(data_loader), desc="Training"):
-        image = data["image"].astype(torch.float32)
-        nucleus = data["nucleus"].astype(torch.float32)
-        labels = data["label"].astype(torch.float32).to(device)
-        input = torch.cat((image, nucleus), dim=1).to(device)
+        # image = data["image"].astype(torch.float32)
+        nucleus = data["nucleus"].astype(torch.float32).to(device)
+        labels = data["image"].astype(torch.float32).to(device)
+        # input = torch.cat((image, nucleus), dim=1).to(device)
+        input = nucleus
 
         output = model(input)
 
@@ -135,7 +137,7 @@ def main(
 ):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    model = ResUNet(n_classes=1, in_channels=2).to(device)
+    model = ResUNet(n_classes=1, in_channels=1).to(device)
 
     dataset_train = get_dataset(
         Path(data_path),
@@ -172,7 +174,7 @@ def main(
 
     # print_metrics(initial_metrics)
 
-    optimizer = torch.optim.SGD(model.parameters(), lr=0.1, momentum=0.9)
+    optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer, "min", patience=10, verbose=True
     )

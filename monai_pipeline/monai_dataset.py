@@ -9,6 +9,7 @@ from monai.transforms import (
     RandRotate90d,
     CenterSpatialCropd,
     DistanceTransformEDTd,
+    NormalizeIntensityd,
 )
 from monai.data import Dataset, CacheDataset
 from typing import Iterable
@@ -62,7 +63,10 @@ def get_dataset(
         transforms.append(CenterSpatialCropd(keys=keys, roi_size=[256, 256]))
 
     if distance_transform:
-        transforms.append(DistanceTransformEDTd(keys=["image", "nucleus"]))
+        transforms.append(DistanceTransformEDTd(keys=["nucleus"]))
+        transforms.append(
+            NormalizeIntensityd(subtrahend=0.0, divisor=25.0, keys=["nucleus"])
+        )
 
     return (
         CacheDataset(data_dicts, Compose(transforms), progress=True)
